@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  *
  * Which each translate into this HTML: <code>&lt;hr /&gt;</code>
  */
-public class ThematicBreak {
+public final class ThematicBreak extends LeafBlock {
 
     public static final Pattern REGEX_PATTERN = Pattern.compile("^[ ]{0,3}([-_*])\\1{2,}[ \\t]*$");
 
