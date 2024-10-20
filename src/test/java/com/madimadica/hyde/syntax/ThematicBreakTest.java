@@ -161,6 +161,16 @@ class ThematicBreakTest {
         assertFalse(ThematicBreak.isThematicBreak("- - -"));
         assertFalse(ThematicBreak.isThematicBreak("-- -"));
         assertFalse(ThematicBreak.isThematicBreak("- --"));
+        // Tabs invalid indentation
+        assertFalse(ThematicBreak.isThematicBreak("\t---"));
+        assertFalse(ThematicBreak.isThematicBreak("\t___"));
+        assertFalse(ThematicBreak.isThematicBreak("\t***"));
+        assertFalse(ThematicBreak.isThematicBreak(" \t---"));
+        assertFalse(ThematicBreak.isThematicBreak(" \t___"));
+        assertFalse(ThematicBreak.isThematicBreak(" \t***"));
+        assertFalse(ThematicBreak.isThematicBreak("\t--- "));
+        assertFalse(ThematicBreak.isThematicBreak("\t___ "));
+        assertFalse(ThematicBreak.isThematicBreak("\t*** "));
     }
 
 
