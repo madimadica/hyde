@@ -129,6 +129,16 @@ public class Lexer {
     }
 
     /**
+     * Get the number of lines left to process, including the current line.
+     * <br>
+     * This will return 0 if all lines are exhausted.
+     * @return number of lines remaining to process
+     */
+    public int getRemainingLines() {
+        return this.totalLines - this.lineNumber;
+    }
+
+    /**
      * Find a line relative to the current line.
      * @param offset - integer offset, either positive or negative (or zero).
      * @return an optional string if the line exists.
@@ -143,7 +153,52 @@ public class Lexer {
      */
     public void skipLine() {
         this.lineNumber++;
-        this.columnNumber++;
+        this.columnNumber = 0;
         this.resetLookahead();
     }
+
+    public static int countLeadingSpaces(String input) {
+        final char[] chars = input.toCharArray();
+        final int len = chars.length;
+        int i = 0;
+        while (i < len && chars[i] == ' ') {
+            i++;
+        }
+        return i;
+    }
+
+    /**
+     * Count the number of leading spaces, up to the limit (inclusive)
+     * and return early if the limit is reached
+     * @param input - input String to analyze
+     * @param limit - maximum number of whitespaces to count
+     * @return number of leading spaces found, up to the limit
+     */
+    public static int countLeadingSpaces(String input, int limit) {
+        final char[] chars = input.toCharArray();
+        final int len = chars.length;
+        int i = 0;
+        while (i < len && chars[i] == ' ') {
+            i++;
+            if (i == limit) return limit;
+        }
+        return i;
+    }
+
+    /**
+     * Verify if the given input contains less than or equal to the limit of leading spaces.
+     * @param input - input to check
+     * @param limit - inclusive upper bound of the allowed number of leading spaces.
+     * @return true if the number of leading spaces is less than the given limit
+     */
+    public static boolean checkLeadingSpacesLEQ(String input, int limit) {
+        return countLeadingSpaces(input, limit + 1) <= limit;
+    }
+
+    public void skipToLine(int lineNumber) {
+        this.lineNumber = lineNumber;
+        this.columnNumber = 0;
+        this.resetLookahead();
+    }
+
 }
