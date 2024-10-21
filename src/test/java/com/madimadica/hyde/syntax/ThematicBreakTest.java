@@ -1,176 +1,249 @@
 package com.madimadica.hyde.syntax;
 
+import com.madimadica.hyde.parsing.Lexer;
+import com.madimadica.hyde.parsing.parsers.ThematicBreakParser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ThematicBreakTest {
 
+    private void assertValid(String input) {
+        Lexer lexer = new Lexer(input);
+        ThematicBreakParser parser = new ThematicBreakParser();
+        assertTrue(parser.parse(lexer).isPresent());
+    }
+
+    private void assertInvalid(String input) {
+        Lexer lexer = new Lexer(input);
+        ThematicBreakParser parser = new ThematicBreakParser();
+        assertTrue(parser.parse(lexer).isEmpty());
+    }
+
     @Test
-    void isThematicBreak() {
-        // Happiest case
-        assertTrue(ThematicBreak.isThematicBreak("---"));
-        assertTrue(ThematicBreak.isThematicBreak("___"));
-        assertTrue(ThematicBreak.isThematicBreak("***"));
+    void standardVersions() {
+        assertValid("---");
+        assertValid("___");
+        assertValid("***");
+    }
 
-        // Leading spaces 1
-        assertTrue(ThematicBreak.isThematicBreak(" ---"));
-        assertTrue(ThematicBreak.isThematicBreak(" ___"));
-        assertTrue(ThematicBreak.isThematicBreak(" ***"));
+    @Test
+    void leadingSpaces1() {
+        assertValid(" ---");
+        assertValid(" ___");
+        assertValid(" ***");
+    }
 
-        // Leading spaces 2
-        assertTrue(ThematicBreak.isThematicBreak("  ---"));
-        assertTrue(ThematicBreak.isThematicBreak("  ___"));
-        assertTrue(ThematicBreak.isThematicBreak("  ***"));
+    @Test
+    void leadingSpaces2() {
+        assertValid("  ---");
+        assertValid("  ___");
+        assertValid("  ***");
+    }
 
-        // Leading spaces 3
-        assertTrue(ThematicBreak.isThematicBreak("   ---"));
-        assertTrue(ThematicBreak.isThematicBreak("   ___"));
-        assertTrue(ThematicBreak.isThematicBreak("   ***"));
+    @Test
+    void leadingSpaces3() {
+        assertValid("   ---");
+        assertValid("   ___");
+        assertValid("   ***");
+    }
 
-        // Trailing spaces 1
-        assertTrue(ThematicBreak.isThematicBreak("--- "));
-        assertTrue(ThematicBreak.isThematicBreak("___ "));
-        assertTrue(ThematicBreak.isThematicBreak("*** "));
+    @Test
+    void leadingSpaces4() {
+        assertInvalid("    ---");
+        assertInvalid("    ___");
+        assertInvalid("    ***");
+    }
 
-        // Trailing tabs 1
-        assertTrue(ThematicBreak.isThematicBreak("---\t"));
-        assertTrue(ThematicBreak.isThematicBreak("___\t"));
-        assertTrue(ThematicBreak.isThematicBreak("***\t"));
+    @Test
+    void leadingSpaces5() {
+        assertInvalid("     ---");
+        assertInvalid("     ___");
+        assertInvalid("     ***");
+    }
 
-        // Trailing spaces/tabs 2
-        assertTrue(ThematicBreak.isThematicBreak("--- \t"));
-        assertTrue(ThematicBreak.isThematicBreak("___ \t"));
-        assertTrue(ThematicBreak.isThematicBreak("*** \t"));
+    @Test
+    void leadingTabs() {
+        assertInvalid("\t---");
+        assertInvalid("\t___");
+        assertInvalid("\t***");
+    }
 
-        // Leading and Trailing spaces 1:1
-        assertTrue(ThematicBreak.isThematicBreak(" --- "));
-        assertTrue(ThematicBreak.isThematicBreak(" ___ "));
-        assertTrue(ThematicBreak.isThematicBreak(" *** "));
+    @Test
+    void leadingTabsAndSpacesA() {
+        assertInvalid(" \t---");
+        assertInvalid(" \t___");
+        assertInvalid(" \t***");
+    }
 
-        // Leading and Trailing spaces 2:1
-        assertTrue(ThematicBreak.isThematicBreak("  --- "));
-        assertTrue(ThematicBreak.isThematicBreak("  ___ "));
-        assertTrue(ThematicBreak.isThematicBreak("  *** "));
+    @Test
+    void leadingTabsAndSpacesB() {
+        assertInvalid("\t ---");
+        assertInvalid("\t ___");
+        assertInvalid("\t ***");
+    }
 
-        // Leading and Trailing spaces 2:2
-        assertTrue(ThematicBreak.isThematicBreak("  ---  "));
-        assertTrue(ThematicBreak.isThematicBreak("  ___  "));
-        assertTrue(ThematicBreak.isThematicBreak("  ***  "));
+    @Test
+    void trailingSpaces1() {
+        assertValid("--- ");
+        assertValid("___ ");
+        assertValid("*** ");
+    }
 
-        // Leading and Trailing spaces 3:1
-        assertTrue(ThematicBreak.isThematicBreak("   --- "));
-        assertTrue(ThematicBreak.isThematicBreak("   ___ "));
-        assertTrue(ThematicBreak.isThematicBreak("   *** "));
+    @Test
+    void trailingSpaces2() {
+        assertValid("---  ");
+        assertValid("___  ");
+        assertValid("***  ");
+    }
 
-        // Leading and Trailing spaces 3:2
-        assertTrue(ThematicBreak.isThematicBreak("   ---  "));
-        assertTrue(ThematicBreak.isThematicBreak("   ___  "));
-        assertTrue(ThematicBreak.isThematicBreak("   ***  "));
+    @Test
+    void trailingSpaces3() {
+        assertValid("---   ");
+        assertValid("___   ");
+        assertValid("***   ");
+    }
 
-        // Leading and Trailing spaces 3:3
-        assertTrue(ThematicBreak.isThematicBreak("   ---   "));
-        assertTrue(ThematicBreak.isThematicBreak("   ___   "));
-        assertTrue(ThematicBreak.isThematicBreak("   ***   "));
+    @Test
+    void trailingTabs1() {
+        assertValid("---\t");
+        assertValid("___\t");
+        assertValid("***\t");
+    }
 
-        // 4+ delimeters
-        assertTrue(ThematicBreak.isThematicBreak("----"));
-        assertTrue(ThematicBreak.isThematicBreak("____"));
-        assertTrue(ThematicBreak.isThematicBreak("****"));
-        assertTrue(ThematicBreak.isThematicBreak(" ----"));
-        assertTrue(ThematicBreak.isThematicBreak(" ____"));
-        assertTrue(ThematicBreak.isThematicBreak(" ****"));
-        assertTrue(ThematicBreak.isThematicBreak("  ----"));
-        assertTrue(ThematicBreak.isThematicBreak("  ____"));
-        assertTrue(ThematicBreak.isThematicBreak("  ****"));
-        assertTrue(ThematicBreak.isThematicBreak("   ----"));
-        assertTrue(ThematicBreak.isThematicBreak("   ____"));
-        assertTrue(ThematicBreak.isThematicBreak("   ****"));
-        assertTrue(ThematicBreak.isThematicBreak(" ---- "));
-        assertTrue(ThematicBreak.isThematicBreak(" ____ "));
-        assertTrue(ThematicBreak.isThematicBreak(" **** "));
-        assertTrue(ThematicBreak.isThematicBreak("  ---- "));
-        assertTrue(ThematicBreak.isThematicBreak("  ____ "));
-        assertTrue(ThematicBreak.isThematicBreak("  **** "));
-        assertTrue(ThematicBreak.isThematicBreak("   ---- "));
-        assertTrue(ThematicBreak.isThematicBreak("   ____ "));
-        assertTrue(ThematicBreak.isThematicBreak("   **** "));
+    @Test
+    void trailingTabs2() {
+        assertValid("---\t\t");
+        assertValid("___\t\t");
+        assertValid("***\t\t");
+    }
 
-        assertTrue(ThematicBreak.isThematicBreak("----"));
-        assertTrue(ThematicBreak.isThematicBreak("____                                               "));
-        assertTrue(ThematicBreak.isThematicBreak("****                                               "));
-        assertTrue(ThematicBreak.isThematicBreak(" ----                                               "));
-        assertTrue(ThematicBreak.isThematicBreak(" ____                                               "));
-        assertTrue(ThematicBreak.isThematicBreak(" ****                                               "));
-        assertTrue(ThematicBreak.isThematicBreak("  ----                                               "));
-        assertTrue(ThematicBreak.isThematicBreak("  ____                                               "));
-        assertTrue(ThematicBreak.isThematicBreak("  ****                                               "));
-        assertTrue(ThematicBreak.isThematicBreak("   ----                                               "));
-        assertTrue(ThematicBreak.isThematicBreak("   ____                                               "));
-        assertTrue(ThematicBreak.isThematicBreak("   ****                                               "));
-        assertTrue(ThematicBreak.isThematicBreak(" ----                                                "));
-        assertTrue(ThematicBreak.isThematicBreak(" ____                                                "));
-        assertTrue(ThematicBreak.isThematicBreak(" ****                                                "));
-        assertTrue(ThematicBreak.isThematicBreak("  ----                                                "));
-        assertTrue(ThematicBreak.isThematicBreak("  ____                                                "));
-        assertTrue(ThematicBreak.isThematicBreak("  ****                                                "));
-        assertTrue(ThematicBreak.isThematicBreak("   ----                                                "));
-        assertTrue(ThematicBreak.isThematicBreak("   ____                                                "));
-        assertTrue(ThematicBreak.isThematicBreak("   ****                                                "));
+    @Test
+    void trailingTabsAndSpacesA() {
+        assertValid("--- \t");
+        assertValid("___ \t");
+        assertValid("*** \t");
+    }
 
-        // ------------ False/Invalid/Edge Cases --------
-        assertFalse(ThematicBreak.isThematicBreak(""));
-        assertFalse(ThematicBreak.isThematicBreak(" "));
-        assertFalse(ThematicBreak.isThematicBreak("  "));
-        assertFalse(ThematicBreak.isThematicBreak("   "));
-        assertFalse(ThematicBreak.isThematicBreak("-"));
-        assertFalse(ThematicBreak.isThematicBreak("--"));
-        assertFalse(ThematicBreak.isThematicBreak(" --"));
-        assertFalse(ThematicBreak.isThematicBreak("  --"));
-        assertFalse(ThematicBreak.isThematicBreak("   --"));
-        assertFalse(ThematicBreak.isThematicBreak("    ---"));
-        assertFalse(ThematicBreak.isThematicBreak("     ---"));
-        assertFalse(ThematicBreak.isThematicBreak("     ___"));
-        assertFalse(ThematicBreak.isThematicBreak("     ***"));
-        assertFalse(ThematicBreak.isThematicBreak("     --- "));
-        assertFalse(ThematicBreak.isThematicBreak("     ___ "));
-        assertFalse(ThematicBreak.isThematicBreak("     *** "));
-        assertFalse(ThematicBreak.isThematicBreak("-- "));
-        assertFalse(ThematicBreak.isThematicBreak("---x"));
-        assertFalse(ThematicBreak.isThematicBreak("___x"));
-        assertFalse(ThematicBreak.isThematicBreak("***x"));
-        assertFalse(ThematicBreak.isThematicBreak("--- x"));
-        assertFalse(ThematicBreak.isThematicBreak("___ x"));
-        assertFalse(ThematicBreak.isThematicBreak("*** x"));
-        assertFalse(ThematicBreak.isThematicBreak("-_-"));
-        assertFalse(ThematicBreak.isThematicBreak("-__"));
-        assertFalse(ThematicBreak.isThematicBreak("--_"));
-        assertFalse(ThematicBreak.isThematicBreak("-_*"));
-        assertFalse(ThematicBreak.isThematicBreak(" -_-"));
-        assertFalse(ThematicBreak.isThematicBreak(" -__"));
-        assertFalse(ThematicBreak.isThematicBreak(" --_"));
-        assertFalse(ThematicBreak.isThematicBreak(" -_*"));
-        assertFalse(ThematicBreak.isThematicBreak("  -_-"));
-        assertFalse(ThematicBreak.isThematicBreak("  -__"));
-        assertFalse(ThematicBreak.isThematicBreak("  --_"));
-        assertFalse(ThematicBreak.isThematicBreak("  -_*"));
-        assertFalse(ThematicBreak.isThematicBreak("   -_-"));
-        assertFalse(ThematicBreak.isThematicBreak("   -__"));
-        assertFalse(ThematicBreak.isThematicBreak("   --_"));
-        assertFalse(ThematicBreak.isThematicBreak("   -_*"));
-        assertFalse(ThematicBreak.isThematicBreak("- - -"));
-        assertFalse(ThematicBreak.isThematicBreak("-- -"));
-        assertFalse(ThematicBreak.isThematicBreak("- --"));
-        // Tabs invalid indentation
-        assertFalse(ThematicBreak.isThematicBreak("\t---"));
-        assertFalse(ThematicBreak.isThematicBreak("\t___"));
-        assertFalse(ThematicBreak.isThematicBreak("\t***"));
-        assertFalse(ThematicBreak.isThematicBreak(" \t---"));
-        assertFalse(ThematicBreak.isThematicBreak(" \t___"));
-        assertFalse(ThematicBreak.isThematicBreak(" \t***"));
-        assertFalse(ThematicBreak.isThematicBreak("\t--- "));
-        assertFalse(ThematicBreak.isThematicBreak("\t___ "));
-        assertFalse(ThematicBreak.isThematicBreak("\t*** "));
+    @Test
+    void trailingTabsAndSpacesB() {
+        assertValid("---\t ");
+        assertValid("___\t ");
+        assertValid("***\t ");
+    }
+
+    @Test
+    void leadingAndTrailingSpaces1() {
+        assertValid(" --- ");
+        assertValid(" ___ ");
+        assertValid(" *** ");
+    }
+
+    @Test
+    void leadingAndTrailingSpaces2() {
+        assertValid("  ---  ");
+        assertValid("  ___  ");
+        assertValid("  ***  ");
+    }
+
+    @Test
+    void leadingAndTrailingSpaces3() {
+        assertValid("   ---   ");
+        assertValid("   ___   ");
+        assertValid("   ***   ");
+    }
+
+    @Test
+    void tooShort() {
+        assertInvalid("");
+        assertInvalid("-");
+        assertInvalid("_");
+        assertInvalid("*");
+        assertInvalid("--");
+        assertInvalid("__");
+        assertInvalid("**");
+        assertInvalid(" -");
+        assertInvalid(" _");
+        assertInvalid(" *");
+        assertInvalid(" --");
+        assertInvalid(" __");
+        assertInvalid(" **");
+        assertInvalid("  -");
+        assertInvalid("  _");
+        assertInvalid("  *");
+        assertInvalid("  --");
+        assertInvalid("  __");
+        assertInvalid("  **");
+        assertInvalid("   -");
+        assertInvalid("   _");
+        assertInvalid("   *");
+        assertInvalid("   --");
+        assertInvalid("   __");
+        assertInvalid("   **");
+    }
+
+    @Test
+    void tooLong() {
+        assertValid("----");
+        assertValid("____");
+        assertValid("****");
+        assertValid(" ----");
+        assertValid(" ____");
+        assertValid(" ****");
+        assertValid("  ----");
+        assertValid("  ____");
+        assertValid("  ****");
+        assertValid("   ----");
+        assertValid("   ____");
+        assertValid("   ****");
+
+        assertValid("-----");
+        assertValid("_____");
+        assertValid("*****");
+        assertValid(" -----");
+        assertValid(" _____");
+        assertValid(" *****");
+        assertValid("  -----");
+        assertValid("  _____");
+        assertValid("  *****");
+        assertValid("   -----");
+        assertValid("   _____");
+        assertValid("   *****");
+    }
+
+    // mixtures
+    @Test
+    void invalidMixtures() {
+        assertInvalid("--_");
+        assertInvalid("--*");
+        assertInvalid("__-");
+        assertInvalid("__*");
+        assertInvalid("**-");
+        assertInvalid("**_");
+        assertInvalid("---_");
+        assertInvalid("---*");
+        assertInvalid("___-");
+        assertInvalid("___*");
+        assertInvalid("***-");
+        assertInvalid("***_");
+    }
+
+    @Test
+    void miscInvalid() {
+        assertInvalid("---x");
+        assertInvalid("___x");
+        assertInvalid("***x");
+        assertInvalid("--- x");
+        assertInvalid("___ x");
+        assertInvalid("*** x");
+        assertInvalid("--- ---");
+        assertInvalid("___ ___");
+        assertInvalid("*** ***");
+        assertInvalid("- - -");
+        assertInvalid("_ _ _");
+        assertInvalid("* * *");
+        assertInvalid("  ");
+        assertInvalid("   ");
     }
 
 
