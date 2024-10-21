@@ -1,5 +1,7 @@
 package com.madimadica.hyde.syntax;
 
+import java.util.Objects;
+
 /**
  * <a href="https://spec.commonmark.org/0.31.2/#atx-headings">CommonMark Spec - ATX headings</a>
  * <br>
@@ -23,68 +25,44 @@ package com.madimadica.hyde.syntax;
  */
 public final class ATXHeading extends LeafBlock {
 
-    private static final int MAX_HEADER_LEVEL = 6;
-    private static final int MAX_INDENT = 3;
+    private final int level;
+    private final String content; // TODO parse inline content
 
-    /**
-     * Check if the given line of input matches the spec
-     * for an ATX heading.
-     * @param line - line to check
-     * @return <code>true</code> if the line is a heading.
-     */
-    public static boolean isATXHeading(String line) {
-        // We don't need to parse the content yet, only check that if it should be.
-        // Therefore, we just need to check the starting conditions
-        final char[] chars = line.toCharArray();
-        final int len = chars.length;
-
-        // Index of where we are at in the input
-        int i = 0;
-
-        // Skip up to 3 spaces, shifting index
-        while (i < len && chars[i] == ' ' && (++i != MAX_INDENT));
-
-        // Must have characters left
-        if (len == i) {
-            return false;
-        }
-
-        // Get indentation levels, placing cursor
-        // immediately after the last headerLevel;
-        int headerLevel = 0;
-        while (i < len) {
-            char current = chars[i];
-            if (current == '#') {
-                headerLevel++;
-                i++; // Only walk over #
-            } else {
-                break;
-            }
-            if (headerLevel > MAX_HEADER_LEVEL) {
-                return false;
-            }
-        }
-
-        // Has no #'s at the start, or too much indentation
-        if (headerLevel == 0) {
-            return false;
-        }
-
-        /*
-         * We are now past all the opening #'s.
-         * Now there are 3 cases.
-         *
-         * Case 1:
-         *   End of line - Valid (no content)
-         * Case 2:
-         *   Tab|Space - Valid (unknown content)
-         * Default:
-         *    - Invalid (i.e. cannot have "###MyHeading")
-         */
-        if (i == len) return true; // Case 1
-        final char c = chars[i]; // Guaranteed safe index
-        return (c == ' ' || c == '\t');
+    public ATXHeading(int level) {
+        this(level, "");
     }
 
+    public ATXHeading(int level, String content) {
+        this.level = level;
+        this.content = content;
+    }
 
+    public int getLevel() {
+        return level;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ATXHeading that = (ATXHeading) o;
+        return level == that.level && Objects.equals(content, that.content);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(level, content);
+    }
+
+    @Override
+    public String toString() {
+        return "ATXHeading{" +
+                "level=" + level +
+                ", content='" + content + '\'' +
+                '}';
+    }
 }
