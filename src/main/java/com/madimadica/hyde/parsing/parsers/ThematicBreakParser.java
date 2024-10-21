@@ -33,7 +33,6 @@ public class ThematicBreakParser implements Parser<ThematicBreak> {
     @Override
     public Optional<ThematicBreak> parse(Lexer lexer) {
         String line = lexer.previewLine();
-        // non-regex implementation of ^[ ]{0,3}([-_*])\\1{2,}[ \\t]*$
         final char[] chars = line.toCharArray();
         final int len = chars.length;
 
@@ -59,25 +58,24 @@ public class ThematicBreakParser implements Parser<ThematicBreak> {
             return Optional.empty();
         }
 
-        // Walk over as many duplicate delimiters as we find
+        // At this point we are locked into this choice of delimiter
+        // Make sure all that remains is tabs, spaces, and this character
         int count = 1;
-        while (i < len && chars[i] == chosenDelimiter) {
-            count++;
-            i++;
-        }
-
-        // Make sure there are at least 3 used
-        if (count < 3) {
-            return Optional.empty();
-        }
-
-        // Check that the end is optionally trailing whitespace
-        while (i < len) {
-            char trailingChar = chars[i];
-            if (trailingChar != ' ' && trailingChar != '\t') {
+        for (; i < len; ++i) {
+            char c = chars[i];
+            if (c != chosenDelimiter && c != ' ' && c != '\t') {
+                // Invalid
                 return Optional.empty();
             }
-            i++;
+            // Increase required counter if it isn't whitespace
+            if (c == chosenDelimiter) {
+                count++;
+            }
+        }
+
+        // Require at least 3 of the chosen type
+        if (count < 3) {
+            return Optional.empty();
         }
 
         // We found a match

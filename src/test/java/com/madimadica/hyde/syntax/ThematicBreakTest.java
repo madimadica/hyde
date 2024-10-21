@@ -236,15 +236,28 @@ class ThematicBreakTest {
         assertInvalid("--- x");
         assertInvalid("___ x");
         assertInvalid("*** x");
-        assertInvalid("--- ---");
-        assertInvalid("___ ___");
-        assertInvalid("*** ***");
-        assertInvalid("- - -");
-        assertInvalid("_ _ _");
-        assertInvalid("* * *");
         assertInvalid("  ");
         assertInvalid("   ");
     }
 
+    @Test
+    void validWhitespaceSeparated() {
+        assertValid("--- ---");
+        assertValid("___ ___");
+        assertValid("*** ***");
+        assertValid("- - -");
+        assertValid("_ _ _");
+        assertValid("* * *");
+
+        assertValid("-\t-\t-");
+        assertValid("-\t- -");
+        assertValid("- -\t-");
+        assertValid("-  -\t\t-");
+        assertValid("-\t -\t -");
+        assertValid("- \t - \t -");
+        assertValid("- \t - \t - \t \t - \t");
+        assertValid("- \t - \t - \t \t - \t ----- ---");
+        assertValid("- \t - \t - \t \t - \t --\t--- ---\t");
+    }
 
 }
