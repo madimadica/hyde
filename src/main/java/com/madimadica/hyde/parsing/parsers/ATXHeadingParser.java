@@ -35,7 +35,7 @@ public class ATXHeadingParser implements Parser<ATXHeading> {
     public static final int MAX_INDENT = 3;
 
     public Optional<ATXHeading> parse(Lexer lexer) {
-        String line = lexer.previewLine();
+        String line = lexer.getCurrentLine();
         // If the input is a valid header, advance the lexer to the end of the line.
 
         // We don't need to parse the content yet, only check that if it should be.

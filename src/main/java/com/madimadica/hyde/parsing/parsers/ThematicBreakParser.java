@@ -32,7 +32,7 @@ public class ThematicBreakParser implements Parser<ThematicBreak> {
 
     @Override
     public Optional<ThematicBreak> parse(Lexer lexer) {
-        String line = lexer.previewLine();
+        String line = lexer.getCurrentLine();
         final char[] chars = line.toCharArray();
         final int len = chars.length;
 
