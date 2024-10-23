@@ -37,6 +37,11 @@ public class Lexer {
      * is currently positioned at.
      */
     private int readColumnNumber;
+    /**
+     * Precompute and cache the indentation amounts for each line.<br>
+     * Indexed the same as <code>lines</code>.
+     */
+    private final int[] indentations;
 
     /**
      * Regex pattern to split by line endings, including a standalone {@code '\r'}
@@ -47,6 +52,10 @@ public class Lexer {
         this.input = input;
         this.lines = List.of(REGEX_LINE_END.split(input));
         this.totalLines = this.lines.size();
+        this.indentations = new int[totalLines];
+        for (int i = 0; i < totalLines; ++i) {
+            indentations[i] = Lexer.computeIndentation(lines.get(i));
+        }
     }
 
     public String getInput() {
@@ -152,7 +161,11 @@ public class Lexer {
      * Resets the lookahead to the start of this line.
      */
     public void skipLine() {
-        this.lineNumber++;
+        skipLines(1);
+    }
+
+    public void skipLines(int amountToSkip) {
+        this.lineNumber += amountToSkip;
         this.columnNumber = 0;
         this.resetLookahead();
     }
@@ -199,6 +212,79 @@ public class Lexer {
         this.lineNumber = lineNumber;
         this.columnNumber = 0;
         this.resetLookahead();
+    }
+
+    /**
+     * Get the indentation of the current line.
+     * Returns -1 if the line is blank. (0 is non-blank with no indent).
+     * @param lineNumber int 0 based index of the line to check.
+     * @return the indentation
+     * @see Lexer#computeIndentation(String, int) 
+     */
+    public int getLineIndentation(int lineNumber) {
+        return this.indentations[lineNumber];
+    }
+
+    /**
+     * Check if the given line number is blank (all whitespaces or empty)
+     * @param lineNumber int 0 based index of the line to check.
+     * @return true if the link is blank.
+     */
+    public boolean isBlankLine(int lineNumber) {
+        return this.indentations[lineNumber] == -1;
+    }
+    
+    /**
+     *
+     * @param s String to check indentation on
+     * @return the integer count of indentation.
+     * @see Lexer#computeIndentation(String, int) 
+     */
+    public static int computeIndentation(String s) {
+        return computeIndentation(s, 4);
+    }
+
+    /**
+     * Compute how much whitespace of indentation there is between tabs and spaces.
+     * <p>
+     *     If the string is blank (all whitespace or empty) then return 0, because nothing is being indented.
+     * </p>
+     * For example, with a tabWidth=4:
+     * <ul>
+     *     <li>space + tab = 4</li>
+     *     <li>space + space + tab = 4</li>
+     *     <li>space + space + space + tab = 4</li>
+     *     <li>space + space + space + space + tab = 8</li>
+     *     <li>tab = 4</li>
+     *     <li>tab + space = 5</li>
+     *     <li>tab + space + tab = 8</li>
+     * </ul>
+     * @param s String to check indentation on
+     * @param tabWidth tab character width
+     * @return the integer count of indentation, -1 if the line is blank.
+     */
+    public static int computeIndentation(String s, final int tabWidth) {
+        int indent = 0;
+        // Track how much a tab is *currently* worth, in terms of spaces.
+        // Improves efficiency by preventing modulus/division
+        int currentTabAmount = tabWidth;
+        // Track if the line is blank, in which case the indent should be zero
+        boolean isBlank = true;
+        for (char c : s.toCharArray()) {
+            if (c == '\t') {
+                indent += currentTabAmount;
+                currentTabAmount = tabWidth;
+            } else if (c == ' ') {
+                indent++;
+                if (--currentTabAmount == 0) {
+                    currentTabAmount = tabWidth;
+                }
+            } else {
+                isBlank = false;
+                break;
+            }
+        }
+        return isBlank ? -1 : indent;
     }
 
 }
