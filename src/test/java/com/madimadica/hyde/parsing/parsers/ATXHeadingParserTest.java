@@ -1,14 +1,14 @@
-package com.madimadica.hyde.syntax;
+package com.madimadica.hyde.parsing.parsers;
 
 import com.madimadica.hyde.parsing.Lexer;
-import com.madimadica.hyde.parsing.parsers.ATXHeadingParser;
+import com.madimadica.hyde.syntax.ATXHeading;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ATXHeadingTest {
+class ATXHeadingParserTest {
 
     private void validCase(String input, int expectedLevel, String expectedRawContent) {
         Lexer lexer = new Lexer(input);

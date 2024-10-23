@@ -1,12 +1,11 @@
-package com.madimadica.hyde.syntax;
+package com.madimadica.hyde.parsing.parsers;
 
 import com.madimadica.hyde.parsing.Lexer;
-import com.madimadica.hyde.parsing.parsers.ThematicBreakParser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ThematicBreakTest {
+class ThematicBreakParserTest {
 
     private void assertValid(String input) {
         Lexer lexer = new Lexer(input);
