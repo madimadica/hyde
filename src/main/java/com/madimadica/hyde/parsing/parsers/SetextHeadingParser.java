@@ -3,6 +3,7 @@ package com.madimadica.hyde.parsing.parsers;
 import com.madimadica.hyde.parsing.Lexer;
 import com.madimadica.hyde.syntax.SetextHeading;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -72,9 +73,8 @@ public class SetextHeadingParser implements Parser<SetextHeading> {
         }
 
         final int startingLineNumber = lexer.getLineNumber();
-        String currentLine = lexer.getCurrentLine();
         // Must have 3 or less leading spaces
-        if (!Lexer.checkLeadingSpacesLEQ(currentLine, 3)) {
+        if (lexer.isBlankLine(startingLineNumber) || lexer.getLineIndentation(startingLineNumber) > 3) {
             return Optional.empty();
         }
 
@@ -94,10 +94,15 @@ public class SetextHeadingParser implements Parser<SetextHeading> {
                 // Level 1: '='    Level 2: '-'
                 int headingLevel = lookaheadLine.contains("=") ? 1 : 2;
                 // Get the header lines excluding the underline
-                var sublistView = lines.subList(startingLineNumber, i);
+                // The heading’s raw content is formed by concatenating the lines and removing initial and final spaces or tabs.
+                List<String> mutableLinesDeepCopy = new ArrayList<>(lines.subList(startingLineNumber, i));
+                mutableLinesDeepCopy.set(0, mutableLinesDeepCopy.get(0).stripLeading());
+                int lastIndex = mutableLinesDeepCopy.size() - 1;
+                mutableLinesDeepCopy.set(lastIndex, mutableLinesDeepCopy.get(lastIndex).stripTrailing());
+
                 // Mutate the lexer state to go beyond the current line
                 lexer.skipToLine(i + 1);
-                return Optional.of(new SetextHeading(sublistView, headingLevel));
+                return Optional.of(new SetextHeading(mutableLinesDeepCopy, headingLevel));
             }
         }
 
