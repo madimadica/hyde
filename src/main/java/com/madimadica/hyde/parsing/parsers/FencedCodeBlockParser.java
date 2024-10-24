@@ -99,6 +99,7 @@ public class FencedCodeBlockParser implements Parser<FencedCodeBlock> {
             content.add(currentLine);
         }
 
+        lexer.skipLines(content.size() + 2); // 2 fences
         return Optional.of(new FencedCodeBlock(infoString, content));
     }
 
