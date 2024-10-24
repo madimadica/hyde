@@ -287,4 +287,16 @@ public class Lexer {
         return isBlank ? -1 : indent;
     }
 
+    public static int countLeading(String s, char c) {
+        final int len = s.length();
+        int count = 0;
+        for (int i = 0; i < len; ++i) {
+            if (s.charAt(i) == c) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        return count;
+    }
 }
