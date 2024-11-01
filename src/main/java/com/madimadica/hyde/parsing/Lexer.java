@@ -1,10 +1,11 @@
 package com.madimadica.hyde.parsing;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-public class Lexer {
+public class Lexer implements Iterable<Character> {
     /**
      * Original input Strings
      */
@@ -89,6 +90,18 @@ public class Lexer {
     public Optional<String> getLine(int lineNumber) {
         if (0 <= lineNumber && lineNumber < lines.size()) {
             return Optional.of(lines.get(lineNumber));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<String> getUnindentedLine(int lineNumber) {
+        if (0 <= lineNumber && lineNumber < lines.size()) {
+            if (this.isBlankLine(lineNumber)) {
+                return Optional.of("");
+            } else {
+                return Optional.of(lines.get(lineNumber).substring(indentations[lineNumber]));
+            }
         } else {
             return Optional.empty();
         }
@@ -233,7 +246,15 @@ public class Lexer {
     public boolean isBlankLine(int lineNumber) {
         return this.indentations[lineNumber] == -1;
     }
-    
+
+    public boolean hasLine(int lineNumber) {
+        return 0 <= lineNumber && lineNumber < totalLines;
+    }
+
+    public boolean hasStandardIndent(int lineNumber) {
+        return !isBlankLine(lineNumber) && getLineIndentation(lineNumber) <= 3;
+    }
+
     /**
      *
      * @param s String to check indentation on
@@ -298,5 +319,119 @@ public class Lexer {
             }
         }
         return count;
+    }
+
+    public boolean lineMatches(int lineNumber, Pattern pattern) {
+        if (lineNumber < 0 || lineNumber >= this.totalLines) {
+            return false;
+        }
+        return pattern.matcher(this.lines.get(lineNumber)).matches();
+    }
+
+    public boolean lineContains(int lineNumber, String substr) {
+        if (lineNumber < 0 || lineNumber >= this.totalLines) {
+            return false;
+        }
+        return this.lines.get(lineNumber).contains(substr);
+    }
+
+    public boolean lineStartsWith(int lineNumber, String substr, int maxIndent) {
+        if (lineNumber < 0 || lineNumber >= this.totalLines) {
+            return false;
+        }
+        int indent = indentations[lineNumber];
+        if (indent > maxIndent) return false;
+        return this.lines.get(lineNumber).startsWith(substr, Math.max(indent, 0));
+    }
+
+    public boolean inBounds(int row, int col) {
+        return (0 <= row && row <= totalLines)
+            && (0 <= col && col < lines.get(col).length());
+    }
+
+    public boolean inBounds(int row) {
+        return (0 <= row && row <= totalLines);
+    }
+
+    /**
+     * Return true if it's the last character on a given line
+     */
+    public boolean isEndOfLine(Position pos) {
+        return lines.get(pos.row()).length() - 1 == pos.column();
+    }
+
+    public boolean isLastCharacter(int row, int col) {
+        return row == totalLines - 1
+            && col == lines.get(row).length() - 1;
+    }
+
+    @Override
+    public LexerIterator iterator() {
+        return new LexerIterator(lineNumber, 0);
+    }
+
+    public LexerIterator iterator(Position startingPosition) {
+        return new LexerIterator(startingPosition.row(), startingPosition.column());
+    }
+
+    public class LexerIterator implements Iterator<Character> {
+        /**
+         * Line of the next token
+         */
+        private int cursorRow;
+        /**
+         * Character of the next token
+         */
+        private int cursorCol;
+
+
+        LexerIterator(int cursorRow, int cursorCol) {
+            this.cursorRow = cursorRow;
+            this.cursorCol = cursorCol;
+        }
+
+        /**
+         * @return true if the current position is in bounds,
+         *         or if we are at the end of a line and another line exists
+         *         (otherwise we're at EOF)
+         */
+        @Override
+        public boolean hasNext() {
+            return inBounds(cursorRow, cursorCol)
+                || inBounds(cursorRow + 1);
+        }
+
+        public char previewNext() {
+            return getCharacter(cursorRow, cursorCol).orElse('\n');
+        }
+
+        @Override
+        public Character next() {
+            Optional<Character> $char = getCharacter(cursorRow, cursorCol);
+            cursorCol++;
+            // Strictly greater than because == length is \n
+            if (cursorCol > lines.get(cursorRow).length()) {
+                cursorCol = 0;
+                cursorRow++;
+            }
+            return $char.orElse('\n');
+        }
+
+        public Position getCurrentPosition() {
+            return new Position(cursorRow, cursorCol);
+        }
+
+        public String consumeWhitespace() {
+            StringBuilder whitespace = new StringBuilder();
+            while (hasNext()) {
+                char next = previewNext();
+                if (next == ' ' || next == '\t' || next == '\n') {
+                    whitespace.append(next());
+                } else {
+                    break;
+                }
+            }
+            return whitespace.toString();
+        }
     }
 }
