@@ -4,6 +4,7 @@ public abstract sealed class LeafBlock extends ASTNode permits
         ATXHeading,
         IndentedCodeBlock,
         FencedCodeBlock,
+        HTMLBlock,
         SetextHeading,
         ThematicBreak {
 
