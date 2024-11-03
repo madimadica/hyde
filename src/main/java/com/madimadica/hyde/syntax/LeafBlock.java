@@ -6,6 +6,7 @@ public abstract sealed class LeafBlock extends ASTNode permits
         FencedCodeBlock,
         HTMLBlock,
         SetextHeading,
-        ThematicBreak {
+        ThematicBreak,
+        LinkReferenceDefinition {
 
 }

@@ -345,12 +345,12 @@ public class Lexer implements Iterable<Character> {
     }
 
     public boolean inBounds(int row, int col) {
-        return (0 <= row && row <= totalLines)
-            && (0 <= col && col < lines.get(col).length());
+        return (0 <= row && row < totalLines)
+            && (0 <= col && col < lines.get(row).length());
     }
 
     public boolean inBounds(int row) {
-        return (0 <= row && row <= totalLines);
+        return (0 <= row && row < totalLines);
     }
 
     /**
@@ -403,6 +403,26 @@ public class Lexer implements Iterable<Character> {
 
         public char previewNext() {
             return getCharacter(cursorRow, cursorCol).orElse('\n');
+        }
+
+        public Optional<Character> previewNextSafe() {
+            if (!hasNext()) {
+                return Optional.empty();
+            }
+            return Optional.of(previewNext());
+        }
+
+        /**
+         * Preview the next character and see if it equals the input
+         * @param target character to match on in the next token.
+         * @return true if a match, false if there is no next token or it doesn't match
+         */
+        public boolean nextEqualsSafe(char target) {
+            if (hasNext()) {
+                return previewNext() == target;
+            } else {
+                return false;
+            }
         }
 
         @Override
