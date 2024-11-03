@@ -582,5 +582,11 @@ class LinkReferenceDefinitionParserTest {
         assertEquals("foo bar", new LinkReferenceDefinition("\t foo \n\t bar ", "bar").getNormalizedLabel());
         assertEquals("foo bar", new LinkReferenceDefinition("\t foo \n\t bar \t", "bar").getNormalizedLabel());
     }
+    
+    @Test
+    void test39_redundantWhitespaceInTitlesAfterNewline() {
+        TestCase.of("[foo]: bar 'fizz\n buzz'").label("foo").destination("bar").title("fizz\nbuzz").cursor(2).runValid();
+
+    }
 
 }
