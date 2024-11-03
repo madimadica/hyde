@@ -1,6 +1,7 @@
 package com.madimadica.hyde.parsing.parsers;
 
 import com.madimadica.hyde.parsing.Lexer;
+import com.madimadica.hyde.syntax.LinkReferenceDefinition;
 import org.junit.jupiter.api.Test;
 
 
@@ -562,5 +563,24 @@ class LinkReferenceDefinitionParserTest {
         TestCase.of("[foo]: bar 'baz' fizz").runInvalid();
     }
 
+    @Test
+    void example206() {
+        assertEquals("αγω", new LinkReferenceDefinition("ΑΓΩ", "bar").getNormalizedLabel());
+    }
+
+    @Test
+    void test38_labelNormalization() {
+        assertEquals("foo", new LinkReferenceDefinition("Foo", "bar").getNormalizedLabel());
+        assertEquals("foo", new LinkReferenceDefinition("FOO", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition("foo\nbar", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition("foo  bar", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition("foo \nbar", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition("foo \n bar", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition("foo \n\t bar", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition(" foo \n\t bar", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition("\t foo \n\t bar", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition("\t foo \n\t bar ", "bar").getNormalizedLabel());
+        assertEquals("foo bar", new LinkReferenceDefinition("\t foo \n\t bar \t", "bar").getNormalizedLabel());
+    }
 
 }

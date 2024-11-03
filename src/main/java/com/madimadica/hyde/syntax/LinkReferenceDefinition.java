@@ -1,5 +1,6 @@
 package com.madimadica.hyde.syntax;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -18,10 +19,15 @@ public final class LinkReferenceDefinition extends LeafBlock {
         this.linkDestination = linkDestination;
         this.linkTitle = linkTitle;
 
-        // TODO normalize the label
-        normalizedLabel = linkLabel;
+        /*
+            One label matches another just in case their normalized forms are equal.
+            To normalize a label, strip off the opening and closing brackets,
+            perform the Unicode case fold, strip leading and trailing spaces, tabs, and line endings,
+            and collapse consecutive internal spaces, tabs, and line endings to a single space.
+         */
+        normalizedLabel = String.join(" ", linkLabel.strip().toLowerCase(Locale.ROOT).split("\\s+"));
     }
-    
+
 
     public String getLinkLabel() {
         return linkLabel;
@@ -35,6 +41,9 @@ public final class LinkReferenceDefinition extends LeafBlock {
         return Optional.ofNullable(linkTitle);
     }
 
+    public String getNormalizedLabel() {
+        return normalizedLabel;
+    }
 
     @Override
     public boolean equals(Object o) {
