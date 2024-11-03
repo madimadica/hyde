@@ -25,7 +25,11 @@ public final class LinkReferenceDefinition extends LeafBlock {
             perform the Unicode case fold, strip leading and trailing spaces, tabs, and line endings,
             and collapse consecutive internal spaces, tabs, and line endings to a single space.
          */
-        normalizedLabel = String.join(" ", linkLabel.strip().toLowerCase(Locale.ROOT).split("\\s+"));
+        normalizedLabel = linkLabel
+                .strip()
+                .toLowerCase(Locale.ROOT)
+                .toUpperCase(Locale.ROOT)
+                .replaceAll("\\s+", " ");
     }
 
 
