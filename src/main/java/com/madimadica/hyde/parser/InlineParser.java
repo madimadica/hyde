@@ -291,6 +291,7 @@ public class InlineParser {
         return true;
     }
 
+
     private boolean parseString() {
         int startPos = pos;
         while (pos < length && !isTokenStartChar(peek())) {
@@ -299,7 +300,56 @@ public class InlineParser {
         assert pos > startPos;
         // Text cannot be empty because the only way to invoke parseString() is to have a non-special char
         String text = input.substring(startPos, pos);
-        // TODO smart replacements
+        if (this.options.smartSymbols()) {
+            text = text.replaceAll("\\.\\.\\.", "…");
+
+            // Smart dashes
+            {
+                record DashRun(int start, int len) {}
+                List<DashRun> dashRuns = new ArrayList<>();
+                int currentRun = 0;
+                final int tLen = text.length();
+                for (int i = 0; i < tLen; ++i) {
+                    char c = text.charAt(i);
+                    if (c == '-') {
+                        currentRun++;
+                    } else {
+                        if (currentRun > 1) {
+                            dashRuns.add(new DashRun(i - currentRun, currentRun));
+                        }
+                        currentRun = 0;
+                    }
+                }
+                if (currentRun > 1) {
+                    dashRuns.add(new DashRun(tLen - currentRun, currentRun));
+                }
+                StringBuilder sb = new StringBuilder();
+                int lastEnd = 0;
+                for (DashRun run : dashRuns) {
+                    sb.append(text, lastEnd, run.start());
+                    int longs = 0;
+                    int shorts = 0;
+                    if (run.len % 3 == 0) {
+                        longs = run.len / 3;
+                    } else if (run.len % 2 == 0) {
+                        shorts = run.len / 2;
+                    } else if (run.len % 3 == 2) {
+                        longs = (run.len - 2) / 3;
+                        shorts = 1;
+                    } else {
+                        longs = (run.len - 4) / 3;
+                        shorts = 2;
+                    }
+                    sb.repeat("—", longs);
+                    sb.repeat("–", shorts);
+                    lastEnd = run.start + run.len;
+                }
+                if (lastEnd != tLen) {
+                    sb.append(text, lastEnd, tLen);
+                }
+                text = sb.toString();
+            }
+        }
         block.appendChild(new InlineTextNode(text));
         return true;
     }
